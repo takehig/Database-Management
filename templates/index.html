@@ -14,9 +14,19 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <h5>SQL実行</h5>
+                        <h5>データベース選択・SQL実行</h5>
                     </div>
                     <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <label for="databaseSelect" class="form-label">データベース</label>
+                                <select class="form-select" id="databaseSelect">
+                                    <option value="crm">CRM Database</option>
+                                    <option value="productmaster">ProductMaster Database</option>
+                                    <option value="aichat">AIChat Database</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="mb-3">
                             <label for="sqlQuery" class="form-label">SQLクエリ</label>
                             <textarea class="form-control" id="sqlQuery" rows="5" placeholder="SELECT * FROM products LIMIT 10;"></textarea>
@@ -47,6 +57,8 @@
     <script>
         async function executeQuery() {
             const query = document.getElementById("sqlQuery").value.trim();
+            const database = document.getElementById("databaseSelect").value;
+            
             if (!query) {
                 alert("SQLクエリを入力してください");
                 return;
@@ -60,6 +72,7 @@
                     },
                     body: JSON.stringify({
                         sql: query,
+                        database: database,
                         params: []
                     })
                 });

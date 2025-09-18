@@ -9,19 +9,36 @@ import uvicorn
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-# データベース接続設定
-DB_CONFIG = {
-    "host": "localhost",
-    "port": 5432,
-    "user": "crm_user",
-    "password": "crm123",
-    "database": "crm"
+# データベース設定
+DB_CONFIGS = {
+    "crm": {
+        "host": "localhost",
+        "port": 5432,
+        "user": "crm_user",
+        "password": "crm123",
+        "database": "crm"
+    },
+    "productmaster": {
+        "host": "localhost",
+        "port": 5432,
+        "user": "productmaster_user",
+        "password": "productmaster123",
+        "database": "productmaster"
+    },
+    "aichat": {
+        "host": "localhost",
+        "port": 5432,
+        "user": "wealthai_user",
+        "password": "wealthai123",
+        "database": "aichat"
+    }
 }
 
-def get_db_connection():
+def get_db_connection(db_name="crm"):
     """データベース接続"""
     try:
-        connection = psycopg2.connect(**DB_CONFIG)
+        config = DB_CONFIGS.get(db_name, DB_CONFIGS["crm"])
+        connection = psycopg2.connect(**config)
         return connection
     except Exception as e:
         print(f"Database connection error: {e}")
@@ -38,13 +55,14 @@ async def execute_sql(request: Request):
     try:
         data = await request.json()
         sql = data.get("sql", "").strip()
+        db_name = data.get("database", "crm")
         
         if not sql:
             return {"status": "error", "error": "SQLクエリが空です"}
         
-        connection = get_db_connection()
+        connection = get_db_connection(db_name)
         if not connection:
-            return {"status": "error", "error": "データベース接続エラー"}
+            return {"status": "error", "error": f"データベース接続エラー ({db_name})"}
         
         cursor = connection.cursor(cursor_factory=RealDictCursor)
         cursor.execute(sql)
