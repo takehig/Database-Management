@@ -28,8 +28,8 @@ DB_CONFIGS = {
     "aichat": {
         "host": "localhost",
         "port": 5432,
-        "user": "wealthai_user",
-        "password": "wealthai123",
+        "user": "aichat_user",
+        "password": "aichat123",
         "database": "aichat"
     }
 }
