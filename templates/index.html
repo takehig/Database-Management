@@ -11,16 +11,16 @@
         <h1>データベース管理システム</h1>
         
         <div class="row mt-4">
-            <div class="col-md-12">
+            <div class="col-md-8">
                 <div class="card">
                     <div class="card-header">
                         <h5>データベース選択・SQL実行</h5>
                     </div>
                     <div class="card-body">
                         <div class="row mb-3">
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <label for="databaseSelect" class="form-label">データベース</label>
-                                <select class="form-select" id="databaseSelect">
+                                <select class="form-select" id="databaseSelect" onchange="loadTables()">
                                     <option value="crm">CRM Database</option>
                                     <option value="productmaster">ProductMaster Database</option>
                                     <option value="aichat">AIChat Database</option>
@@ -33,6 +33,18 @@
                         </div>
                         <button class="btn btn-primary" onclick="executeQuery()">実行</button>
                         <button class="btn btn-secondary ms-2" onclick="clearQuery()">クリア</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>テーブル一覧</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="tablesList">
+                            <p class="text-muted">データベースを選択してください</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -55,6 +67,38 @@
     </div>
     
     <script>
+        // ページ読み込み時にテーブル一覧を取得
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTables();
+        });
+
+        async function loadTables() {
+            const database = document.getElementById("databaseSelect").value;
+            const tablesDiv = document.getElementById("tablesList");
+            
+            try {
+                const response = await fetch(`/api/tables/${database}`);
+                const result = await response.json();
+                
+                if (result.status === "success") {
+                    let html = "<div class=\"list-group\">";
+                    result.tables.forEach(table => {
+                        html += `<button type="button" class="list-group-item list-group-item-action" onclick="selectTable('${table}')">${table}</button>`;
+                    });
+                    html += "</div>";
+                    tablesDiv.innerHTML = html;
+                } else {
+                    tablesDiv.innerHTML = `<div class="alert alert-danger">${result.error}</div>`;
+                }
+            } catch (error) {
+                tablesDiv.innerHTML = `<div class="alert alert-danger">テーブル一覧取得エラー: ${error.message}</div>`;
+            }
+        }
+
+        function selectTable(tableName) {
+            document.getElementById("sqlQuery").value = `SELECT * FROM ${tableName} LIMIT 10;`;
+        }
+
         async function executeQuery() {
             const query = document.getElementById("sqlQuery").value.trim();
             const database = document.getElementById("databaseSelect").value;

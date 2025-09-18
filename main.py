@@ -49,6 +49,28 @@ async def index(request: Request):
     """メインページ"""
     return templates.TemplateResponse("index.html", {"request": request})
 
+@app.get("/api/tables/{db_name}")
+async def get_tables(db_name: str):
+    """テーブル一覧取得"""
+    try:
+        connection = get_db_connection(db_name)
+        if not connection:
+            return {"status": "error", "error": f"データベース接続エラー ({db_name})"}
+        
+        cursor = connection.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name")
+        tables = cursor.fetchall()
+        connection.close()
+        
+        return {
+            "status": "success",
+            "tables": [table["table_name"] for table in tables]
+        }
+    except Exception as e:
+        if "connection" in locals():
+            connection.close()
+        return {"status": "error", "error": str(e)}
+
 @app.post("/api/execute-sql")
 async def execute_sql(request: Request):
     """手動SQL実行"""
